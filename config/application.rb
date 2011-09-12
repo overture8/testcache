@@ -45,8 +45,11 @@ module Testcache
     # Version of your assets, change this if you want to expire all your assets
     config.assets.version = '1.0'
 
+    config.action_controller.page_cache_directory = "#{Rails.root}/public/cache/"
+
     config.middleware.insert_before(Rack::Lock, Rack::Rewrite) do
-      rewrite %r{(.*)}, '$host/$1' #, :if => Proc.new { |rack_env| rack_env['SERVER_NAME'] != "localhost" }
+      rewrite %r{(.*)}, Proc.new { |path, r| "/cache/#{r['SERVER_NAME']}#{path}.html" }, 
+        :if => Proc.new { |r| File.exists?("#{Rails.root}/public/cache/#{r['SERVER_NAME']}#{r['PATH_INFO']}.html") }
     end
   end
 end
